@@ -43,8 +43,10 @@ find_package(Threads REQUIRED)
 link_libraries(Threads::Threads)
 
 # LLVM dependency
-find_package(Clang CONFIG QUIET)
-if(NOT ${Clang_FOUND} OR ${EXTERNAL_LLVM_IGNORE_SYSTEM})
+if (NOT EXTERNAL_LLVM_IGNORE_SYSTEM)
+	find_package(Clang CONFIG QUIET)
+endif()
+if(NOT Clang_FOUND)
 	set(EXTERNAL_LLVM_SOURCE_DIR "${CMAKE_SOURCE_DIR}/externals/LLVM")
 	set(EXTERNAL_LLVM_BINARY_DIR "${CMAKE_BINARY_DIR}/externals/LLVM")
 	set(Clang_SEARCH_PATH "${EXTERNAL_LLVM_BINARY_DIR}/install/lib/cmake/clang")

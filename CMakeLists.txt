@@ -14,7 +14,7 @@ option(ENABLE_LLVM_ADDRESS_SANITIZER "Adds compiler flags to generate LLVM sourc
 option(ENABLE_LLVM_MEMORY_SANITIZER "Adds compiler flags to generate LLVM source-based code coverage. Only works with Clang." OFF)
 set(EXTERNAL_LLVM_BUILD_TYPE ${CMAKE_BUILD_TYPE} CACHE STRING "Same as CMAKE_BUILD_TYPE, but applied to LLVM when downloading it.")
 option(EXTERNAL_LLVM_STRIP_DEBUG_INFO "Compiles the external LLVM without debug info, mainly to reduce its size." OFF)
-set(EXTRA_RUNTIME_DEPENDENCY_DIRS "" CACHE STRING "Needed by setuptools to create the Python packages.")
+option(EXTERNAL_LLVM_IGNORE_SYSTEM "Forces a local compilation of LLVM from sources." OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -44,7 +44,7 @@ link_libraries(Threads::Threads)
 
 # LLVM dependency
 find_package(Clang CONFIG QUIET)
-if(NOT Clang_FOUND)
+if(NOT ${Clang_FOUND} OR ${EXTERNAL_LLVM_IGNORE_SYSTEM})
 	set(EXTERNAL_LLVM_SOURCE_DIR "${CMAKE_SOURCE_DIR}/externals/LLVM")
 	set(EXTERNAL_LLVM_BINARY_DIR "${CMAKE_BINARY_DIR}/externals/LLVM")
 	set(Clang_SEARCH_PATH "${EXTERNAL_LLVM_BINARY_DIR}/install/lib/cmake/clang")

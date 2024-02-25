@@ -94,7 +94,7 @@ jobs:
         cmake --install ./build/${{ matrix.conan_preset }} --prefix '${{github.workspace}}/installation/template-coverage'
 
     - name: Test
-      run: ${{github.workspace}}/build/${{ matrix.conan_preset }}/bin/test
+      run: ${{github.workspace}}/build/${{ matrix.conan_preset }}/bin/Test
 
     - name: Upload artifact binary
       uses: actions/upload-artifact@v3

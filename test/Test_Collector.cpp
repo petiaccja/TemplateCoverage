@@ -16,9 +16,10 @@ static llvm::cl::OptionCategory templateCoverageCategory("template-coverage opti
 
 std::pair<std::shared_ptr<ClangTool>, std::shared_ptr<CommonOptionsParser>> CreateTool(std::string_view file) {
     const auto path = std::filesystem::path(TEST_INPUT_DIR) / file;
+    const auto pathStr = path.string();
     std::array<const char*, 4> argv = {
         "template-coverage",
-        path.c_str(),
+        pathStr.data(),
         "--",
         "-stdlib=libstdc++",
     };

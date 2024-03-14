@@ -83,7 +83,7 @@ jobs:
         PR: "${{github.workspace}}/.github/build_profiles/${{matrix.build_profile}}"
       run: |
         cmake -E make_directory "${{github.workspace}}/build"
-        conan install "${{github.workspace}}" --build=missing -pr $PR -pr:b $PR
+        conan install "${{github.workspace}}" --build="*" -pr $PR -pr:b $PR
         conan cache clean
         cmake -S "${{github.workspace}}" --preset conan-${{ matrix.conan_preset }} -DEXTERNAL_LLVM_STRIP_DEBUG_INFO:BOOL=ON -DEXTERNAL_LLVM_IGNORE_SYSTEM:BOOL=ON
 

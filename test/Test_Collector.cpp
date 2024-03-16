@@ -21,7 +21,6 @@ std::pair<std::shared_ptr<ClangTool>, std::shared_ptr<CommonOptionsParser>> Crea
         "template-coverage",
         pathStr.data(),
         "--",
-        "-stdlib=libstdc++",
     };
     int argc = int(argv.size());
     auto maybeParser = CommonOptionsParser::create(argc, argv.data(), templateCoverageCategory);

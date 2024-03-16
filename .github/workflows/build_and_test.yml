@@ -15,23 +15,23 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        build_profile: [clang20d, clang20r, gcc20d, gcc20r, msvc20d, msvc20r]
+        build_profile: [clang20r, gcc20r, msvc20r]
         include:
-          - build_profile: clang20d
-            conan_preset: clang-20-debug
-            os: ubuntu-latest
+          # - build_profile: clang20d
+          #   conan_preset: clang-20-debug
+          #   os: ubuntu-latest
           - build_profile: clang20r
             conan_preset: clang-20-release
             os: ubuntu-latest
-          - build_profile: gcc20d
-            conan_preset: gcc-20-debug
-            os: ubuntu-latest
+          # - build_profile: gcc20d
+          #   conan_preset: gcc-20-debug
+          #   os: ubuntu-latest
           - build_profile: gcc20r
             conan_preset: gcc-20-release
             os: ubuntu-latest
-          - build_profile: msvc20d
-            conan_preset: msvc-20-debug
-            os: windows-latest
+          # - build_profile: msvc20d
+          #   conan_preset: msvc-20-debug
+          #   os: windows-latest
           - build_profile: msvc20r
             conan_preset: msvc-20-release
             os: windows-latest

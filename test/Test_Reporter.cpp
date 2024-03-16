@@ -26,7 +26,7 @@ TEST_CASE("Reporter: SonarQube XML", "[Reporter]") {
     REQUIRE(doc.child("coverage"));
     REQUIRE(doc.child("coverage").child("file"));
     REQUIRE(doc.child("coverage").child("file").attribute("path"));
-    REQUIRE(doc.child("coverage").child("file").attribute("path").as_string() == "/my/source.cpp"sv);
+    REQUIRE(std::filesystem::path(doc.child("coverage").child("file").attribute("path").as_string()) == std::filesystem::path("/my/source.cpp"));
     REQUIRE(doc.child("coverage").child("file").child("lineToCover"));
     REQUIRE(doc.child("coverage").child("file").child("lineToCover").attribute("lineNumber"));
     REQUIRE(doc.child("coverage").child("file").child("lineToCover").attribute("lineNumber").as_int() == 1);

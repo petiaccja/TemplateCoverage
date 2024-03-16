@@ -21,7 +21,8 @@ std::string ReportSonarQubeXML(const std::unordered_map<std::filesystem::path, s
 
     for (const auto& [filePath, linesToCover] : executableLines) {
         auto fileNode = rootNode.append_child("file");
-        fileNode.append_attribute("path").set_value(filePath.c_str());
+        const auto filePathStr = filePath.string();
+        fileNode.append_attribute("path").set_value(filePathStr.c_str(), filePathStr.size());
         for (const auto line : linesToCover) {
             auto lineNode = fileNode.append_child("lineToCover");
             lineNode.append_attribute("lineNumber").set_value(line);

@@ -45,7 +45,7 @@ public:
 
             if (!beginInvalid) {
                 const auto validEndLine = !endInvalid ? endLine : beginLine;
-                for (size_t line = beginLine; line <= endLine; ++line) {
+                for (size_t line = beginLine; line <= validEndLine; ++line) {
                     m_executableLines.insert(line);
                 }
             }

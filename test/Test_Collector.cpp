@@ -4,6 +4,7 @@
 #include <llvm/Support/CommandLine.h>
 
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/matchers/catch_matchers_all.hpp>
 
 
 using namespace clang::tooling;
@@ -60,5 +61,7 @@ TEST_CASE("Collector: template", "[Collector]") {
     const auto allLines = CollectExecutableLines(*tool);
     REQUIRE(allLines.size() == 1);
     const auto& fileLines = allLines.begin()->second;
-    REQUIRE(fileLines == std::vector<size_t>{ 3 });
+    // If delayed template parsing used, like in MSVC, we will only get a single line for the function's declaration.
+    REQUIRE_THAT(fileLines,
+                 Catch::Matchers::Equals(std::vector<size_t>{ 3 }) || Catch::Matchers::Equals(std::vector<size_t>{ 2 }));
 }

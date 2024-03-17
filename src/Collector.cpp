@@ -11,7 +11,7 @@
 
 #include <algorithm>
 #include <filesystem>
-#include <iostream>
+#include <ranges>
 #include <unordered_set>
 
 
@@ -21,15 +21,18 @@ using namespace clang;
 namespace matchers = clang::ast_matchers;
 
 
-matchers::StatementMatcher executableCodeMatcher = matchers::stmt(matchers::anyOf(
-                                                                      matchers::returnStmt(matchers::isExpansionInMainFile()),
-                                                                      matchers::continueStmt(matchers::isExpansionInMainFile()),
-                                                                      matchers::breakStmt(matchers::isExpansionInMainFile()),
-                                                                      matchers::coreturnStmt(matchers::isExpansionInMainFile()),
-                                                                      matchers::coyieldExpr(matchers::isExpansionInMainFile()),
-                                                                      matchers::gotoStmt(matchers::isExpansionInMainFile()),
-                                                                      matchers::expr(matchers::isExpansionInMainFile())))
-                                                       .bind("executableCode");
+static matchers::StatementMatcher executableCodeMatcher = matchers::stmt(matchers::anyOf(
+                                                                             matchers::returnStmt(matchers::isExpansionInMainFile()),
+                                                                             matchers::continueStmt(matchers::isExpansionInMainFile()),
+                                                                             matchers::breakStmt(matchers::isExpansionInMainFile()),
+                                                                             matchers::coreturnStmt(matchers::isExpansionInMainFile()),
+                                                                             matchers::coyieldExpr(matchers::isExpansionInMainFile()),
+                                                                             matchers::gotoStmt(matchers::isExpansionInMainFile()),
+                                                                             matchers::expr(matchers::isExpansionInMainFile())))
+                                                              .bind("executableCode");
+
+static matchers::DeclarationMatcher lateTemplateMatcher = matchers::functionDecl(matchers::isExpansionInMainFile())
+                                                              .bind("lateTemplate");
 
 
 class ExecutableLineCollector : public matchers::MatchFinder::MatchCallback {
@@ -37,19 +40,34 @@ public:
     void run(const matchers::MatchFinder::MatchResult& result) override {
         auto& sourceManager = *result.SourceManager;
 
-        if (const Stmt* node = result.Nodes.getNodeAs<Stmt>("executableCode")) {
-            bool beginInvalid = true;
-            const auto beginLine = sourceManager.getExpansionLineNumber(node->getBeginLoc(), &beginInvalid);
-            bool endInvalid = true;
-            const auto endLine = sourceManager.getExpansionLineNumber(node->getEndLoc(), &endInvalid);
+        if (const auto* node = result.Nodes.getNodeAs<Stmt>("executableCode")) {
+            auto spannedLines = GetSpannedLines(sourceManager, node->getBeginLoc(), node->getEndLoc());
+            for (auto line : spannedLines) {
+                m_executableLines.insert(line);
+            }
+        }
 
-            if (!beginInvalid) {
-                const auto validEndLine = !endInvalid ? endLine : beginLine;
-                for (size_t line = beginLine; line <= validEndLine; ++line) {
+        if (const auto* node = result.Nodes.getNodeAs<FunctionDecl>("lateTemplate")) {
+            if (node->isLateTemplateParsed()) {
+                auto spannedLines = GetSpannedLines(sourceManager, node->getBeginLoc(), node->getEndLoc());
+                for (auto line : spannedLines) {
                     m_executableLines.insert(line);
                 }
             }
         }
+    }
+
+    static auto GetSpannedLines(SourceManager& sm, SourceLocation beginLoc, SourceLocation endLoc) {
+        bool beginInvalid = true;
+        const auto beginLine = sm.getExpansionLineNumber(beginLoc, &beginInvalid);
+        bool endInvalid = true;
+        const auto endLine = sm.getExpansionLineNumber(endLoc, &endInvalid);
+
+        if (!beginInvalid) {
+            const auto validEndLine = !endInvalid ? endLine : beginLine;
+            return std::views::iota(beginLine, validEndLine + 1);
+        }
+        return std::views::iota(static_cast<decltype(beginLine)>(0), static_cast<decltype(beginLine)>(0));
     }
 
     std::vector<size_t> GetExecutableLines() {
@@ -102,6 +120,7 @@ std::unordered_map<std::filesystem::path, std::vector<size_t>> CollectExecutable
     FileExecutableLineCollector fileCollector{ collector };
     matchers::MatchFinder finder;
     finder.addMatcher(executableCodeMatcher, collector.get());
+    finder.addMatcher(lateTemplateMatcher, collector.get());
 
     const auto result = tool.run(newFrontendActionFactory(&finder, &fileCollector).get());
     if (result != 0) {

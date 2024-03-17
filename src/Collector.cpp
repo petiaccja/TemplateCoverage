@@ -37,6 +37,19 @@ static matchers::DeclarationMatcher lateTemplateMatcher = matchers::functionDecl
 
 class ExecutableLineCollector : public matchers::MatchFinder::MatchCallback {
 public:
+    static auto GetSpannedLines(SourceManager& sm, SourceLocation beginLoc, SourceLocation endLoc) {
+        bool beginInvalid = true;
+        const auto beginLine = sm.getExpansionLineNumber(beginLoc, &beginInvalid);
+        bool endInvalid = true;
+        const auto endLine = sm.getExpansionLineNumber(endLoc, &endInvalid);
+
+        if (!beginInvalid) {
+            const auto validEndLine = !endInvalid ? endLine : beginLine;
+            return std::views::iota(beginLine, validEndLine + 1);
+        }
+        return std::views::iota(static_cast<decltype(beginLine)>(0), static_cast<decltype(beginLine)>(0));
+    }
+
     void run(const matchers::MatchFinder::MatchResult& result) override {
         auto& sourceManager = *result.SourceManager;
 
@@ -55,19 +68,6 @@ public:
                 }
             }
         }
-    }
-
-    static auto GetSpannedLines(SourceManager& sm, SourceLocation beginLoc, SourceLocation endLoc) {
-        bool beginInvalid = true;
-        const auto beginLine = sm.getExpansionLineNumber(beginLoc, &beginInvalid);
-        bool endInvalid = true;
-        const auto endLine = sm.getExpansionLineNumber(endLoc, &endInvalid);
-
-        if (!beginInvalid) {
-            const auto validEndLine = !endInvalid ? endLine : beginLine;
-            return std::views::iota(beginLine, validEndLine + 1);
-        }
-        return std::views::iota(static_cast<decltype(beginLine)>(0), static_cast<decltype(beginLine)>(0));
     }
 
     std::vector<size_t> GetExecutableLines() {

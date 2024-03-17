@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  workflow_run:
+    workflows: [Build & test]
+    branches: [v**.**]
+    types: [completed]
+
+jobs:
+  create_release:
+    permissions:
+      actions: read
+      contents: write  
+    env:
+      GH_TOKEN: ${{ github.token }}
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch != null }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_branch }}
+
+      - name: Download artifacts
+        shell: bash
+        run: |
+          mkdir -p ./Binaries/Windows_x86_64
+          mkdir -p ./Binaries/Linux_x86_64
+          gh run download ${{ github.event.workflow_run.id }} --dir ./Binaries/Windows_x86_64 -p *windows*msvc20r
+          gh run download ${{ github.event.workflow_run.id }} --dir ./Binaries/Linux_x86_64 -p *ubuntu*clang20r
+          mv ./Binaries/Windows_x86_64/template-coverage* ./Binaries/Windows_x86_64/template-coverage
+          mv ./Binaries/Linux_x86_64/template-coverage* ./Binaries/Linux_x86_64/template-coverage
+          cd ./Binaries/Windows_x86_64
+          zip -r template-coverage_Windows_x86_64.zip template-coverage
+          cd ../..
+          cd ./Binaries/Linux_x86_64
+          zip -r template-coverage_Linux_x86_64.zip template-coverage
+          cd ../..
+
+      - name: Create release
+        shell: bash
+        run: |
+          gh release create ${{ github.event.workflow_run.head_branch }}
+          gh release upload ${{ github.event.workflow_run.head_branch }} ./Binaries/Windows_x86_64/template-coverage_Windows_x86_64.zip#template-coverage_Windows_x86_64
+          gh release upload ${{ github.event.workflow_run.head_branch }} ./Binaries/Linux_x86_64/template-coverage_Linux_x86_64.zip#template-coverage_Linux_x86_64
+
+  

@@ -33,12 +33,12 @@ static llvm::cl::OptionCategory templateCoverageCategory("template-coverage opti
 
 static llvm::cl::opt<std::string> outputOpt("out-file",
                                             llvm::cl::init("./coverage"),
-                                            llvm::cl::desc("the file into which the coverage report is written"),
+                                            llvm::cl::desc("The file into which the coverage report is written"),
                                             llvm::cl::cat(templateCoverageCategory));
 
 static llvm::cl::opt<FormatEnum> formatOpt("format",
                                            llvm::cl::init(FormatEnum::FIRST),
-                                           llvm::cl::desc("coverage report file format"),
+                                           llvm::cl::desc("Coverage report file format"),
                                            llvm::cl::cat(templateCoverageCategory),
                                            clFormats(reporterFormats));
 

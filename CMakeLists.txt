@@ -97,9 +97,4 @@ add_subdirectory(test)
 set_target_properties(TemplateCoverage PROPERTIES INSTALL_RPATH "$ORIGIN")
 install(
 	TARGETS TemplateCoverage DESTINATION "."
-	RUNTIME_DEPENDENCIES
-		PRE_EXCLUDE_REGEXES "ext-ms-.*" "api-ms-.*" "hvsifiletrust.dll" "pdmutilities.dll"
-		DIRECTORIES ${EXTRA_RUNTIME_DEPENDENCY_DIRS}
-		POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
-		DESTINATION "."
 )

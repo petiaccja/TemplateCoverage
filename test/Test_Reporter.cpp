@@ -1,7 +1,6 @@
 #include <Reporter.hpp>
 #include <pugixml.hpp>
 
-#include <algorithm>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -32,4 +31,21 @@ TEST_CASE("Reporter: SonarQube XML", "[Reporter]") {
     REQUIRE(doc.child("coverage").child("file").child("lineToCover").attribute("lineNumber").as_int() == 1);
     REQUIRE(doc.child("coverage").child("file").child("lineToCover").attribute("covered"));
     REQUIRE(doc.child("coverage").child("file").child("lineToCover").attribute("covered").as_bool() == false);
+}
+
+
+TEST_CASE("Reporter: LCOV", "[Reporter]") {
+    const auto output = ReportLCOV(input);
+
+    INFO(output);
+
+    constexpr std::string_view expected =
+        "TN:\n"
+        "SF:/my/source.cpp\n"
+        "DA:1,0\n"
+        "LH:0\n"
+        "LF:1\n"
+        "end_of_record\n";
+
+    REQUIRE(output == expected);
 }

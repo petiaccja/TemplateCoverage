@@ -34,3 +34,19 @@ std::string ReportSonarQubeXML(const std::unordered_map<std::filesystem::path, s
     doc.save(ss);
     return ss.str();
 }
+
+
+std::string ReportLCOV(const std::unordered_map<std::filesystem::path, std::vector<size_t>>& executableLines) {
+    std::stringstream ss;
+    ss << "TN:\n";
+    for (const auto& [file, lines] : executableLines) {
+        ss << "SF:" << file.string() << "\n";
+        for (const auto line : lines) {
+            ss << "DA:" << line << "," << 0 << "\n";
+        }
+        ss << "LH:" << 0 << "\n";
+        ss << "LF:" << lines.size() << "\n";
+        ss << "end_of_record\n";
+    }
+    return ss.str();
+}

@@ -21,14 +21,15 @@ using namespace clang;
 namespace matchers = clang::ast_matchers;
 
 
-static matchers::StatementMatcher executableCodeMatcher = matchers::stmt(matchers::anyOf(
-                                                                             matchers::returnStmt(matchers::isExpansionInMainFile()),
-                                                                             matchers::continueStmt(matchers::isExpansionInMainFile()),
-                                                                             matchers::breakStmt(matchers::isExpansionInMainFile()),
-                                                                             matchers::coreturnStmt(matchers::isExpansionInMainFile()),
-                                                                             matchers::coyieldExpr(matchers::isExpansionInMainFile()),
-                                                                             matchers::gotoStmt(matchers::isExpansionInMainFile()),
-                                                                             matchers::expr(matchers::isExpansionInMainFile())))
+static matchers::StatementMatcher executableCodeMatcher = matchers::stmt(matchers::allOf(matchers::anyOf(
+                                                                                             matchers::returnStmt(matchers::isExpansionInMainFile()),
+                                                                                             matchers::continueStmt(matchers::isExpansionInMainFile()),
+                                                                                             matchers::breakStmt(matchers::isExpansionInMainFile()),
+                                                                                             matchers::coreturnStmt(matchers::isExpansionInMainFile()),
+                                                                                             matchers::coyieldExpr(matchers::isExpansionInMainFile()),
+                                                                                             matchers::gotoStmt(matchers::isExpansionInMainFile()),
+                                                                                             matchers::expr(matchers::isExpansionInMainFile())),
+                                                                                         matchers::hasAncestor(matchers::functionDecl())))
                                                               .bind("executableCode");
 
 static matchers::DeclarationMatcher lateTemplateMatcher = matchers::functionDecl(matchers::isExpansionInMainFile())

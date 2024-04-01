@@ -90,14 +90,15 @@ jobs:
     - name: Build
       run: |
         cmake --build --preset conan-${{ matrix.conan_preset }}
-        cmake -E make_directory ${{github.workspace}}/installation/template-coverage
-        cmake --install ./build/${{ matrix.conan_preset }} --prefix '${{github.workspace}}/installation/template-coverage'
+        cmake -E make_directory ${{github.workspace}}/install/TemplateCoverage
+        cmake --install ./build/${{ matrix.conan_preset }} --prefix '${{github.workspace}}/install/TemplateCoverage'
 
     - name: Test
       run: ${{github.workspace}}/build/${{ matrix.conan_preset }}/bin/Test
 
     - name: Upload artifact binary
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
-        name: template-coverage-${{matrix.os}}-${{matrix.build_profile}}
-        path: '${{github.workspace}}/installation/template-coverage'
+        name: TemplateCoverage-${{matrix.build_profile}}
+        path: '${{github.workspace}}/install/TemplateCoverage'
+        if-no-files-found: error

@@ -65,3 +65,55 @@ TEST_CASE("Collector: template", "[Collector]") {
     REQUIRE_THAT(fileLines,
                  Catch::Matchers::Equals(std::vector<size_t>{ 3 }) || Catch::Matchers::Equals(std::vector<size_t>{ 2 }));
 }
+
+
+TEST_CASE("Collector: namespace_scope", "[Collector]") {
+    const auto fileName = "namespace_scope.hpp";
+    const auto [tool, parser] = CreateTool(fileName);
+    const auto allLines = CollectExecutableLines(*tool);
+    REQUIRE(allLines.size() == 1);
+    const auto& fileLines = allLines.begin()->second;
+    REQUIRE(fileLines.empty());
+}
+
+
+TEST_CASE("Collector: class_scope", "[Collector]") {
+    const auto fileName = "class_scope.hpp";
+    const auto [tool, parser] = CreateTool(fileName);
+    const auto allLines = CollectExecutableLines(*tool);
+    REQUIRE(allLines.size() == 1);
+    const auto& fileLines = allLines.begin()->second;
+    REQUIRE(fileLines.empty());
+}
+
+
+TEST_CASE("Collector: method", "[Collector]") {
+    const auto fileName = "method.hpp";
+    const auto [tool, parser] = CreateTool(fileName);
+    const auto allLines = CollectExecutableLines(*tool);
+    REQUIRE(allLines.size() == 1);
+    const auto& fileLines = allLines.begin()->second;
+    REQUIRE(fileLines == std::vector<size_t>{ 3 });
+}
+
+
+TEST_CASE("Collector: template_method", "[Collector]") {
+    const auto fileName = "template_method.hpp";
+    const auto [tool, parser] = CreateTool(fileName);
+    const auto allLines = CollectExecutableLines(*tool);
+    REQUIRE(allLines.size() == 1);
+    const auto& fileLines = allLines.begin()->second;
+    REQUIRE_THAT(fileLines,
+                 Catch::Matchers::Equals(std::vector<size_t>{ 3 }) || Catch::Matchers::Equals(std::vector<size_t>{ 4 }));
+}
+
+
+TEST_CASE("Collector: template_class", "[Collector]") {
+    const auto fileName = "template_class.hpp";
+    const auto [tool, parser] = CreateTool(fileName);
+    const auto allLines = CollectExecutableLines(*tool);
+    REQUIRE(allLines.size() == 1);
+    const auto& fileLines = allLines.begin()->second;
+    REQUIRE_THAT(fileLines,
+                 Catch::Matchers::Equals(std::vector<size_t>{ 3 }) || Catch::Matchers::Equals(std::vector<size_t>{ 4 }));
+}

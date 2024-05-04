@@ -1,6 +1,6 @@
 template <class T>
-void func() {
-    return;
+void func() { // T
+    return; // X
 }
 
 template <class T>

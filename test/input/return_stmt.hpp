@@ -1,3 +1,3 @@
 inline void func() {
-    return;
+    return; // X
 }

@@ -1,4 +1,4 @@
 inline void func() {
-    if (false) {
+    for (;;) { // X
     }
 }

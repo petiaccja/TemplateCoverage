@@ -1,6 +1,6 @@
 class C {
     template <class T>
-    void method() {
-        return;
+    void method() { // T
+        return; // X
     }
 };

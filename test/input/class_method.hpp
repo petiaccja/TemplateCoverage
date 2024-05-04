@@ -1,5 +1,5 @@
 class C {
     void method() {
-        return;
+        return; // X
     }
 };

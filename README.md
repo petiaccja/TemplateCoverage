@@ -42,7 +42,7 @@ By default, TemplateCoverage looks for the LLVM libraries on your system. You ca
 
 If you want TemplateCoverage to use a specific LLVM installation, you can specify the `Clang_DIR` and `LLVM_DIR` environment variables (or CMake variables) to point to the CMake config folder within your LLVM installation This way you can change the build flags for LLVM or override the LLVM version.
 
-## Uisng TemplateCoverage
+## Using TemplateCoverage
 
 ### Command line
 
@@ -110,6 +110,25 @@ template-coverage -extra-arg=-resource-dir=/usr/lib/... source.cpp
 
 This should solve the issue. Try to use the same clang version when getting the resource directory as the one template-coverage was compiled with.
 
+## TemplateCoverage on CI workflows
+
+The easiest way to use TemplateCoverage on the CI is to fetch the binaries from GitHub releases, and then invoke it on your `compile_commands.json` using the Python helper script.
+
+The following GitHub workflow snippet serves as an example:
+
+```yaml
+- name: Template coverage
+  run: |
+    wget https://github.com/petiaccja/TemplateCoverage/releases/download/v1.4.0/TemplateCoverage_Linux_x86_64.zip
+    unzip TemplateCoverage_Linux_x86_64.zip
+    chmod +x ./TemplateCoverage_Linux_x86_64/template-coverage
+    export RESOURCE_DIR=$(clang++ -print-resource-dir)
+    python3 ./TemplateCoverage_Linux_x86_64/run_on_compile_commands.py -p path/to/compile_commands.json TemplateCoverage_Linux_x86_64/template-coverage -- --format=lcov --out-file=template_coverage.info -extra-arg=-resource-dir=$RESOURCE_DIR
+```
+
+This workflow step will output a `template_coverage.info` file in the LCOV format, which you can later merge with profiled coverage data. Some services, like [codecov.io](https://codecov.io), can merge the files themselves, for other services, like [SonarCloud](https://sonarcloud.io), you can use tools like [ReportGenerator](https://reportgenerator.io/).
+
+The build step and coverage upload step of your workflow should essentially stay the same.
 
 ## How it works
 

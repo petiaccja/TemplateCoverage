@@ -3,26 +3,25 @@
 
 ## Introduction
 
-TemplateCoverage analyzes your source code and generates a code coverage report for all executable lines. Unlike llvm-cov, TemplateCoverage includes uninstantiated templates and unused inline methods as well, this way you can get an accurate code coverage for header-only template libraries. Note that TemplateCoverage does not profile your application, it only output a blank coverage report that contains all lines. You have to measure the actual coverage using llvm-cov or something similar, and merge it with the results from TemplateCoverage.
+TemplateCoverage analyzes your source code and generates a code coverage report listing all executable lines as uncovered. Unlike llvm-cov, TemplateCoverage includes uninstantiated templates and unused inline methods as well, this way you can get an accurate code coverage for header-only template libraries. Note that TemplateCoverage does not profile your application, it generates only a blank coverage report with everything not covered. You have to measure the actual coverage using llvm-cov or similar, and merge it with the results from TemplateCoverage.
 
 
 ## Installing TemplateCoverage
 
-### Using the binaries
+### Get the binary distribution
 
-You can download the binaries of TemplateCoverage from [GitHub releases](https://github.com/petiaccja/TemplateCoverage/releases). Keep it mind that you need to manually install the dependencies to your system, which includes the C++ runtimes of your platform and a few common packages. Most likely all is already present on your machine.
+You can download the binaries of TemplateCoverage from [GitHub releases](https://github.com/petiaccja/TemplateCoverage/releases). Currently, you have to install the dependencies manually, which boils down to the C++ runtime libraries and a few common libraries required by LLVM. Most likely, you already have it all installed.
 
 ### Building from source
 
-TemplateCoverage uses the conan package manager and the CMake build system. Additionally, TemplateCoverage relies on LLVM, which is automatically downloaded and built from the CMake build script. Keep in mind that if you opt to build LLVM, the CMake configuration step can easily take half an hour or more.
+Requirements:
+- CMake
+- Python3 & the conan package manager
+- A C++20-compatible compiler (MSVC, GCC, Clang)
+- Make, ninja, or similar build tool
+- LLVM libraries (read below)
 
-First, install your preferred C++20 compiler, then install conan by typing this:
-
-```
-pip install conan
-```
-
-Afterwards, you can follow the standard conan & CMake procedure:
+Once you have the requirements installed, you can follow the standard conan + CMake procedure:
 
 ```
 git clone https://github.com/petiaccja/TemplateCoverage.git
@@ -33,36 +32,37 @@ cmake --build --preset conan-debug
 cmake --install ./build/conan-debug --prefix <target-dir>
 ```
 
-Note that here I used the `default` profile for conan. You're of course free to use any that you wish, or you can also check out the `.github/workflows/build_profiles` folder that contains the CI's build profiles. You can also use those locally. The appropriate CMake preset (in this case `conan-debug`) is determined by your conan profile.
+Note that here I used the `default` profile for conan, but you can use any that you like. You can also check out the `.github/workflows/build_profiles` folder that contains the CI's build profiles, which can also be used locally. The appropriate CMake preset (in this case `conan-debug`) is provided by your conan profile.
 
-#### Customizing the LLVM dependency
+#### LLVM libraries
 
-TemplateCoverage builds its own LLVM dependency if it cannot find any on the system. It's important to note that TemplateCoverage **requires LLVM to be built with RTTI and exceptions**. (This is because TemplateCoverage uses both exceptions and RTTI, and it won't otherwise link to LLVM.)
+The LLVM libraries are automatically downloaded and compiled when building TemplateCoverage. This is done during the configuration step of CMake, which, as a result, can take 30 minutes or more.
 
-To force TemplateCoverage to build LLVM instead of using the system's, you can use the `EXTERNAL_LLVM_IGNORE_SYSTEM:BOOL=ON` switch on your CMake configure command. This is useful if your system LLVM was not built with the correct flags, which is the case for most LLVM packages.
+By default, TemplateCoverage looks for the LLVM libraries on your system. You can prevent this behaviour by defining `EXTERNAL_LLVM_IGNORE_SYSTEM:BOOL=ON` during the CMake configuration. In this case, TemplateCoverage will fall back to downloading LLVM. If you use the system's LLVM libraries, make sure that your system LLVM was build with exceptions and RTTI. (This is not the case for most LLVM packages!)
 
-If you want to use the system LLVM, or want to use a custom-built LLVM, you can specify the `Clang_DIR` and `LLVM_DIR` environment variables (or CMake variables) to point to the CMake config folder within your LLVM installation This way you can change the build flags for LLVM or change the LLVM version.
+If you want TemplateCoverage to use a specific LLVM installation, you can specify the `Clang_DIR` and `LLVM_DIR` environment variables (or CMake variables) to point to the CMake config folder within your LLVM installation This way you can change the build flags for LLVM or override the LLVM version.
 
-
-## Using TemplateCoverage
+## Uisng TemplateCoverage
 
 ### Command line
 
-To analyze `source.cpp` and write the executable lines in `coverage.xml`, you would use the following command:
+To analyze `source.cpp` and write the executable lines in `coverage.xml`, invoke `template-coverage` like this:
 
 ```
 template-coverage --format=sonar-xml --out-file=./coverage.xml source.cpp
 ```
 
-This will search for the `compile_commands.json` in the parents of `source.cpp`, and infer the compilation commands from there.
+The compilation flags used to build `source.cpp` should also be specified. You have two options for this.
 
-In case you want to specify the compilation commands yourself, you can do it like so:
+First, you can specify the compilation flags manually after the `--` seperator on the command line:
 
 ```
 template-coverage --format=sonar-xml --out-file=./coverage.xml source.cpp -- clang++ -O3
 ```
 
-For further options, use the `--help` flag, or check out the reference for clang-check. TemplateCoverage and clang-check are both LLVM-based tools, and they share the same command line interface.
+Second, you can put a `compile_commands.json` file in any of the parent folders of `source.cpp`. TemplateCoverage will find the compilation DB and search for flags for the analyzed source files. You can use CMake to generate the compilation DB for you.
+
+For more information, use the `--help` flag, or check out the reference for clang-check. TemplateCoverage and clang-check are both LLVM-based tools, and they share the same command line interface.
 
 ### Running TemplateCoverage over all files in `compile_commands.json`
 
@@ -93,7 +93,7 @@ On Windows, the MSVC compiler only parses templates at the end of the compilatio
 
 ### <stddef.h> not found
 
-If you run into this problem, you need to specify the proper resource directory to template-coverage.
+If you run into this problem, you need to specify the resource directory to template-coverage.
 
 You can get the resource directory from clang:
 
@@ -120,7 +120,7 @@ In short, what happens is that TemplateCoverage parses your source code into the
 
 ## Contributing
 
-The application is about 200 lines of code and is really simple. You should be able to get started right away. There are also only really two things that can be added to it.
+The application is about 200 lines of code and is really simple. You should be able to get started right away. There are also really only two things that can be added to it.
 
 ### Adding a new output format
 
